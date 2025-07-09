@@ -5,50 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star, ShieldCheck, MapPin, Users, ShoppingBag } from "lucide-react";
-import { products as allProducts } from "./ExploreProducts"; // Assuming products are here
+import { realProducts } from "@/data/products";
+import { realSellers } from "@/data/sellers";
 
-// Mock seller data - in a real app, this would come from an API
-const sellers = [
-  {
-    id: "sunita-devi",
-    name: "Sunita Devi",
-    bio: "Passionate home cook specializing in traditional North Indian pickles and chutneys. I use recipes passed down through generations, ensuring authentic taste and quality. Member of 'Mahila Shakti SHG' since 2021.",
-    shgAssociation: "Mahila Shakti SHG",
-    hygieneStatus: "Certified Clean Kitchen (FSSAI Basic)",
-    isVerified: true,
-    rewardLevel: "Star Seller",
-    profileImage: "https://source.unsplash.com/150x150/?indian,woman,cooking",
-    location: "Jaipur, Rajasthan",
-    memberSince: "July 2021",
-    reviews: [
-      { id: 1, user: "Priya S.", rating: 5, comment: "Amazing pickles! Just like my grandmother used to make." },
-      { id: 2, user: "Raj K.", rating: 4.5, comment: "Very flavorful and well-packaged. Highly recommend the mango pickle." },
-    ],
-  },
-  {
-    id: "radha-kitchen",
-    name: "Radha Kitchen",
-    bio: "Bringing you the freshest seasonal vegetables, sourced directly from local farms. We believe in healthy eating and sustainable practices. Associated with 'Annapurna Farmers Group'.",
-    shgAssociation: "Annapurna Farmers Group",
-    hygieneStatus: "Good Hygiene Practices Certified",
-    isVerified: true,
-    rewardLevel: "Silver Seller",
-    profileImage: "https://source.unsplash.com/150x150/?indian,woman,farmer",
-    location: "Pune, Maharashtra",
-    memberSince: "March 2022",
-    reviews: [
-      { id: 1, user: "Amit G.", rating: 5, comment: "Vegetables are always fresh and delivered on time." },
-    ],
-  },
-  // Add more mock sellers if needed, matching seller names in products
-];
 
 const SellerProfile = () => {
   const { sellerId } = useParams();
   // Find seller by id or a modified name from product.seller for now
-  const seller = sellers.find(s => s.id === sellerId || s.name.toLowerCase().replace(/\s+/g, '-') === sellerId);
+  const seller = realSellers.find(s => s.id === sellerId || s.name.toLowerCase().replace(/\s+/g, '-') === sellerId);
 
-  const sellerProducts = allProducts.filter(p => p.seller === seller?.name);
+  const sellerProducts = realProducts.filter(p => p.seller === seller?.name);
 
   if (!seller) {
     return (
@@ -77,12 +43,15 @@ const SellerProfile = () => {
           <CardContent className="p-6 pt-0">
             <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-20">
               <img
-                src={seller.profileImage}
-                alt={seller.name}
+                src={seller.image}
+                alt={seller.displayName}
                 className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-background shadow-xl object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "/placeholder.svg";
+                }}
               />
               <div className="mt-4 sm:ml-6 text-center sm:text-left">
-                <h1 className="text-3xl font-bold text-ethnic-primary">{seller.name}</h1>
+                <h1 className="text-3xl font-bold text-ethnic-primary">{seller.displayName}</h1>
                 <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
                   {seller.isVerified && (
                     <Badge className="bg-trust-green text-white text-xs">
@@ -108,7 +77,7 @@ const SellerProfile = () => {
           <div className="lg:col-span-1 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-ethnic-primary">About {seller.name}</CardTitle>
+                <CardTitle className="text-ethnic-primary">About {seller.displayName}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground leading-relaxed">{seller.bio}</p>
@@ -155,7 +124,7 @@ const SellerProfile = () => {
           {/* Right Column: Products by this Seller */}
           <div className="lg:col-span-2">
             <h2 className="text-2xl font-semibold text-ethnic-primary mb-4">
-              Products by {seller.name} ({sellerProducts.length})
+              Products by {seller.displayName} ({sellerProducts.length})
             </h2>
             {sellerProducts.length > 0 ? (
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -167,6 +136,9 @@ const SellerProfile = () => {
                           src={product.image}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.svg";
+                          }}
                         />
                         {product.badge && (
                           <Badge variant="secondary" className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs">
@@ -186,9 +158,11 @@ const SellerProfile = () => {
                           <span className="text-md font-bold text-ethnic-primary">
                             {product.price}
                           </span>
-                          <span className="text-xs text-muted-foreground line-through">
-                            {product.originalPrice}
-                          </span>
+                          {product.originalPrice && (
+                            <span className="text-xs text-muted-foreground line-through">
+                              {product.originalPrice}
+                            </span>
+                          )}
                         </div>
                          <Button variant="ethnic" size="sm" className="w-full mt-2 text-xs">
                             View Product

@@ -3,63 +3,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Star } from 'lucide-react';
+import { realProducts } from "@/data/products";
 
-// Re-using a simplified version of the product type from ExploreProducts
-// And using a subset of the mock data from ExploreProducts for consistency
-const mockMostSoldProducts = [
-  {
-    id: 1,
-    name: "Homemade Pickle Combo",
-    seller: "Sunita Devi",
-    price: "₹299",
-    rating: 4.8,
-    image: "https://source.unsplash.com/400x300/?homemade,pickle,combo",
-    badge: "🌟 Top Seller",
-    category: "Ghar ka Khana", // For potential link or filter
-  },
-  {
-    id: 13, // Gulab Jamun from ExploreProducts mock data
-    name: "Homemade Gulab Jamun",
-    seller: "Sweet Delights",
-    price: "₹199",
-    rating: 4.9,
-    image: "https://source.unsplash.com/400x300/?gulab,jamun",
-    badge: "Festive Favorite",
-    category: "Ghar ka Khana"
-  },
-  {
-    id: 3,
-    name: "Natural Face Pack",
-    seller: "Meera's Beauty",
-    price: "₹149",
-    rating: 4.9,
-    image: "https://source.unsplash.com/400x300/?natural,face,pack",
-    badge: "Chemical Free",
-    category: "Natural Cosmetics"
-  },
-  {
-    id: 5,
-    name: "Student Tiffin Pack",
-    seller: "Amma's Kitchen",
-    price: "₹120",
-    rating: 4.8,
-    image: "https://source.unsplash.com/400x300/?student,tiffin,pack",
-    badge: "Nutritious",
-    category: "Ghar ka Khana"
-  },
-   {
-    id: 9,
-    name: "Handwoven Bag",
-    seller: "Kiran Crafts",
-    price: "₹299",
-    rating: 4.8,
-    image: "https://source.unsplash.com/400x300/?handwoven,bag",
-    badge: "Eco-Friendly",
-    category: "Handmade Crafts"
-  },
-];
+// Get top 5 products based on rating and category diversity
+const getMostSoldProducts = () => {
+  return realProducts
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
+};
 
 const MostSoldProducts: React.FC = () => {
+  const mostSoldProducts = getMostSoldProducts();
+
   return (
     <section className="py-12 bg-amber-50">
       <div className="container mx-auto px-4">
@@ -67,7 +22,7 @@ const MostSoldProducts: React.FC = () => {
           Our Most Loved Products
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {mockMostSoldProducts.map((product) => (
+          {mostSoldProducts.map((product) => (
             <Link to={`/explore?category=${encodeURIComponent(product.category)}&product_id=${product.id}`} key={product.id}> {/* Example Link */}
               <Card className="group hover:shadow-warm transition-all duration-300 overflow-hidden h-full flex flex-col">
                 <CardContent className="p-0 flex flex-col flex-grow">
@@ -76,6 +31,9 @@ const MostSoldProducts: React.FC = () => {
                       src={product.image}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
                     />
                     {product.badge && (
                       <Badge variant="secondary" className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs">

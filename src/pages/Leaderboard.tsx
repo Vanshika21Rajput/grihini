@@ -7,67 +7,30 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Star, TrendingUp, Users, ShoppingBag, Crown, Medal, Award } from 'lucide-react';
+import { realSellers } from "@/data/sellers";
 
 const Leaderboard = () => {
   const [activeTab, setActiveTab] = useState("sellers");
 
-  const topSellers = [
-    {
-      rank: 1,
-      name: "Sunita Devi",
-      location: "Indore, MP",
-      orders: 1250,
-      rating: 4.9,
-      revenue: "₹1,25,000",
-      image: "https://source.unsplash.com/150x150/?indian,woman,cooking",
-      badge: "👑 Queen of Kitchen",
-      growth: "+45%"
-    },
-    {
-      rank: 2,
-      name: "Meera Sharma",
-      location: "Pune, MH",
-      orders: 980,
-      rating: 4.8,
-      revenue: "₹98,000",
-      image: "https://source.unsplash.com/150x150/?indian,lady,chef",
-      badge: "🥈 Silver Star",
-      growth: "+38%"
-    },
-    {
-      rank: 3,
-      name: "Radha Kumari",
-      location: "Jaipur, RJ",
-      orders: 875,
-      rating: 4.7,
-      revenue: "₹87,500",
-      image: "https://source.unsplash.com/150x150/?traditional,indian,cook",
-      badge: "🥉 Bronze Champion",
-      growth: "+32%"
-    },
-    {
-      rank: 4,
-      name: "Kavita Patel",
-      location: "Ahmedabad, GJ",
-      orders: 720,
-      rating: 4.9,
-      revenue: "₹72,000",
-      image: "https://source.unsplash.com/150x150/?gujarati,woman,cooking",
-      badge: "⭐ Rising Star",
-      growth: "+28%"
-    },
-    {
-      rank: 5,
-      name: "Priya Singh",
-      location: "Lucknow, UP",
-      orders: 650,
-      rating: 4.8,
-      revenue: "₹65,000",
-      image: "https://source.unsplash.com/150x150/?north,indian,woman",
-      badge: "🌟 Craft Master",
-      growth: "+25%"
-    }
-  ];
+  // Convert real sellers to leaderboard format
+  const topSellers = realSellers
+    .sort((a, b) => {
+      if (b.ordersThisWeek !== a.ordersThisWeek) {
+        return b.ordersThisWeek - a.ordersThisWeek;
+      }
+      return b.rating - a.rating;
+    })
+    .map((seller, index) => ({
+      rank: index + 1,
+      name: seller.displayName,
+      location: seller.location,
+      orders: seller.ordersThisWeek * 4, // Approximate monthly orders
+      rating: seller.rating,
+      revenue: `₹${(seller.ordersThisWeek * 150).toLocaleString()}`, // Estimated revenue
+      image: seller.image,
+      badge: seller.rewardLevel,
+      growth: `+${Math.floor(seller.ordersThisWeek / 10)}%` // Mock growth percentage
+    }));
 
   const topCustomers = [
     {

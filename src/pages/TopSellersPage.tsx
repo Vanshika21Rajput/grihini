@@ -6,98 +6,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from '@/components/ui/badge';
 import { Star, TrendingUp, ShieldCheck } from 'lucide-react'; // Added ShieldCheck for verified
 import { Link } from 'react-router-dom';
-
-// Mock Seller Data (enhanced from CustomizeMeal's chef data)
-// In a real app, this would come from a backend and be dynamic
-const mockSellers = [
-  {
-    id: 1,
-    name: "Sunita Aunty",
-    location: "Indore, MP",
-    speciality: "North Indian",
-    rating: 4.9,
-    experience: "15 years",
-    ordersThisWeek: 120, // New field for ranking
-    onTimeDeliveryRate: 0.98, // New field
-    image: "https://source.unsplash.com/400x300/?indian,woman,cooking",
-    isVerified: true,
-    profileLink: "/seller/sunita-aunty" // Example link
-  },
-  {
-    id: 2,
-    name: "Meera Didi",
-    location: "Pune, MH",
-    speciality: "Gujarati Thali",
-    rating: 4.8,
-    experience: "12 years",
-    ordersThisWeek: 95,
-    onTimeDeliveryRate: 0.95,
-    image: "https://source.unsplash.com/400x300/?indian,lady,chef",
-    isVerified: true,
-    profileLink: "/seller/meera-didi"
-  },
-  {
-    id: 3,
-    name: "Radha Ma",
-    location: "Jaipur, RJ",
-    speciality: "Rajasthani",
-    rating: 4.7,
-    experience: "20 years",
-    ordersThisWeek: 150,
-    onTimeDeliveryRate: 0.99,
-    image: "https://source.unsplash.com/400x300/?traditional,indian,cook",
-    isVerified: true,
-    profileLink: "/seller/radha-ma"
-  },
-  {
-    id: 4, // Adding a new seller for variety
-    name: "Chef Priya",
-    location: "Bangalore, KA",
-    speciality: "South Indian Fusion",
-    rating: 4.85,
-    experience: "8 years",
-    ordersThisWeek: 110,
-    onTimeDeliveryRate: 0.97,
-    image: "https://source.unsplash.com/400x300/?modern,indian,chef",
-    isVerified: false, // Example of a non-verified seller
-    profileLink: "/seller/chef-priya"
-  },
-  {
-    id: 5,
-    name: "Artisan Crafts Co.", // Non-food seller example
-    location: "Mumbai, MH",
-    speciality: "Handmade Decor",
-    rating: 4.9,
-    experience: "5 years",
-    ordersThisWeek: 70,
-    onTimeDeliveryRate: 1.0, // Perfect delivery
-    image: "https://source.unsplash.com/400x300/?handmade,crafts,store",
-    isVerified: true,
-    profileLink: "/seller/artisan-crafts-co"
-  }
-];
-
-// Function to determine top sellers (mock logic)
-const getTopSellers = (sellers: typeof mockSellers, count = 3) => {
-  return [...sellers]
-    .sort((a, b) => {
-      // Simple ranking: orders desc, then rating desc
-      if (b.ordersThisWeek !== a.ordersThisWeek) {
-        return b.ordersThisWeek - a.ordersThisWeek;
-      }
-      return b.rating - a.rating;
-    })
-    .slice(0, count)
-    .map(seller => seller.id); // Return IDs of top sellers
-};
-
+import { realSellers, getTopSellers } from "@/data/sellers";
 
 const TopSellersPage: React.FC = () => {
-  const topSellerIds = useMemo(() => getTopSellers(mockSellers), []);
+  const topSellerIds = useMemo(() => getTopSellers(realSellers), []);
 
   // For displaying all sellers, perhaps with a highlight for top ones
   const sortedSellers = useMemo(() => {
-    return [...mockSellers].sort((a, b) => {
+    return [...realSellers].sort((a, b) => {
       if (topSellerIds.includes(a.id) && !topSellerIds.includes(b.id)) return -1;
       if (!topSellerIds.includes(a.id) && topSellerIds.includes(b.id)) return 1;
       if (b.ordersThisWeek !== a.ordersThisWeek) return b.ordersThisWeek - a.ordersThisWeek;
@@ -129,12 +45,12 @@ const TopSellersPage: React.FC = () => {
                 <Card className={`h-full transition-all duration-300 hover:shadow-xl ${isTopSeller ? 'border-2 border-amber-400 bg-amber-50/30 shadow-lg' : 'border'}`}>
                   <CardHeader className="flex flex-row items-center gap-4 pb-3">
                     <Avatar className="h-16 w-16 border-2 border-primary/20">
-                      <AvatarImage src={seller.image} alt={seller.name} />
-                      <AvatarFallback>{seller.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarImage src={seller.image} alt={seller.displayName} />
+                      <AvatarFallback>{seller.displayName.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <CardTitle className="text-xl text-ethnic-primary group-hover:text-primary transition-colors">
-                        {seller.name}
+                        {seller.displayName}
                         {seller.isVerified && <ShieldCheck className="inline-block h-5 w-5 text-trust-green ml-2" />}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">{seller.speciality}</p>
@@ -175,10 +91,5 @@ const TopSellersPage: React.FC = () => {
     </div>
   );
 };
-
-// This function could be exported to be used elsewhere (e.g., on product cards)
-// For now, it's internal to this page for simplicity of demonstration
-export const getTopSellerIds = () => getTopSellers(mockSellers).map(id => id);
-
 
 export default TopSellersPage;

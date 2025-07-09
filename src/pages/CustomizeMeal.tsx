@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star, Users, Clock, ChefHat, Languages, Volume2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { realSellers } from "@/data/sellers";
 
 const CustomizeMeal = () => {
   const [spiceLevel, setSpiceLevel] = useState([3]);
@@ -86,44 +87,19 @@ const CustomizeMeal = () => {
     window.speechSynthesis.speak(msg);
   };
 
-  const chefs = [
-    {
-      id: 1,
-      name: "Sunita Aunty",
-      location: "Indore, MP",
-      speciality: "North Indian",
-      rating: 4.9,
-      experience: "15 years",
-      orders: 500,
-      image: "/placeholder.svg",
-      price: "₹150/meal",
-      available: true
-    },
-    {
-      id: 2,
-      name: "Meera Didi",
-      location: "Pune, MH", 
-      speciality: "Gujarati Thali",
-      rating: 4.8,
-      experience: "12 years",
-      orders: 350,
-      image: "/placeholder.svg",
-      price: "₹120/meal",
-      available: true
-    },
-    {
-      id: 3,
-      name: "Radha Ma",
-      location: "Jaipur, RJ",
-      speciality: "Rajasthani",
-      rating: 4.7,
-      experience: "20 years",
-      orders: 600,
-      image: "/placeholder.svg",
-      price: "₹180/meal",
-      available: false
-    }
-  ];
+  // Convert real sellers to chef format for meal customization
+  const chefs = realSellers.map(seller => ({
+    id: seller.id,
+    name: seller.displayName,
+    location: seller.location,
+    speciality: seller.speciality,
+    rating: seller.rating,
+    experience: seller.experience,
+    orders: seller.ordersThisWeek * 4, // Approximate monthly orders
+    image: seller.image,
+    price: "₹150/meal", // Default price, could be customized per seller
+    available: true
+  }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -303,7 +279,14 @@ const CustomizeMeal = () => {
                       className={`rounded-lg border p-4 flex flex-col items-center cursor-pointer transition-all duration-200 hover:shadow-lg ${selectedChef === chef.id ? "border-primary bg-primary/10" : "border-border bg-white"} ${!chef.available ? "opacity-50 pointer-events-none" : ""}`}
                       onClick={() => chef.available && setSelectedChef(chef.id)}
                     >
-                      <img src={chef.image} alt={chef.name} className="w-16 h-16 rounded-full mb-2 object-cover border-2 border-primary" />
+                      <img 
+                        src={chef.image} 
+                        alt={chef.name} 
+                        className="w-16 h-16 rounded-full mb-2 object-cover border-2 border-primary"
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
+                      />
                       <div className="font-semibold text-ethnic-primary">{chef.name}</div>
                       <div className="text-xs text-muted-foreground mb-1">{chef.speciality}</div>
                       <div className="flex items-center gap-1 text-xs mb-1">
