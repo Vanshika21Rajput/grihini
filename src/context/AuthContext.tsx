@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api';
 
 interface User {
   id: string;
@@ -32,15 +33,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedUser = localStorage.getItem('gruhini_user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+    } else {
+      // Check if user is authenticated on the backend
+      checkBackendAuth();
     }
   }, []);
+
+  const checkBackendAuth = async () => {
+    try {
+      const authStatus = await apiClient.checkAuth();
+      if (authStatus.authenticated && authStatus.user) {
+        setUser(authStatus.user);
+        localStorage.setItem('gruhini_user', JSON.stringify(authStatus.user));
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    }
+  };
 
   const login = (userData: User) => {
     setUser(userData);
     localStorage.setItem('gruhini_user', JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await apiClient.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     setUser(null);
     localStorage.removeItem('gruhini_user');
   };

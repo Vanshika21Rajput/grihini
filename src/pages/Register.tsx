@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { apiClient, isValidEmail, isValidPhone } from "@/lib/api";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +32,16 @@ const Register = () => {
       return;
     }
 
+    if (!isValidEmail(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    if (formData.phone && !isValidPhone(formData.phone)) {
+      toast.error('Please enter a valid phone number');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
@@ -43,20 +54,22 @@ const Register = () => {
 
     setIsLoading(true);
     
-    // Simulate registration process
-    setTimeout(() => {
-      const userData = {
-        id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
-        type: 'customer' as const
-      };
-      
-      login(userData);
-      toast.success('Account created successfully! Welcome to गृहिणी!');
-      navigate('/');
+    try {
+      const response = await apiClient.register(formData);
+
+      if (response.success && response.user) {
+        login(response.user);
+        toast.success('Account created successfully! Welcome to गृहिणी!');
+        navigate('/');
+      } else {
+        toast.error(response.message || 'Registration failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast.error('Registration failed. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (

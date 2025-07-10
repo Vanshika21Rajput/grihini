@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock, User, Phone, Building, Tag } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { apiClient, isValidEmail } from "@/lib/api";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -52,24 +53,33 @@ const Login = () => {
       toast.error('Please fill in all fields');
       return;
     }
+
+    if (!isValidEmail(customerData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
     
     setIsLoading(true);
     
-    // Simulate login process
-    setTimeout(() => {
-      // Mock user data - in real app, this would come from API
-      const userData = {
-        id: '1',
-        name: customerData.email.split('@')[0], // Extract name from email for demo
-        email: customerData.email,
-        type: 'customer' as const
-      };
-      
-      login(userData);
-      toast.success('Login successful! Welcome back!');
-      navigate('/');
+    try {
+      const response = await apiClient.login({
+        username: customerData.email,
+        password: customerData.password
+      });
+
+      if (response.success && response.user) {
+        login(response.user);
+        toast.success('Login successful! Welcome back!');
+        navigate('/');
+      } else {
+        toast.error(response.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Login failed. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleSellerRegistration = async (e: React.FormEvent) => {
@@ -82,7 +92,88 @@ const Login = () => {
       return;
     }
 
-    // Simulate WhatsApp message sending
+    if (!isValidEmail(sellerData.email)) {
+      toast.error('Please enter a valid email address');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await apiClient.registerSeller({
+        name: sellerData.name,
+        email: sellerData.email,
+        phone: sellerData.phone,
+        businessName: sellerData.businessName,
+        categories: sellerData.categories,
+        address: '' // You might want to add address field to the form
+      });
+
+      if (response.success && response.user) {
+        // Simulate WhatsApp message sending
+        setTimeout(() => {
+          const whatsappMessage = `🎉 Welcome to गृहिणी Family!
+
+Dear ${sellerData.name},
+
+Thank you for registering as a seller with us!
+
+📋 Your Details:
+• Name: ${sellerData.name}
+• Business: ${sellerData.businessName}
+• Categories: ${sellerData.categories.join(', ')}
+• Email: ${sellerData.email}
+• Phone: ${sellerData.phone}
+
+📸 Next Steps:
+1. Please send us photos of your products
+2. Include product names and prices
+3. Our team will review and approve your items
+4. Once approved, your products will go live!
+
+📱 Send your product photos to this WhatsApp number with:
+- Product name
+- Price
+- Brief description
+- High-quality images
+
+We'll review and get back to you within 24 hours!
+
+Welcome aboard! 🚀
+
+Team गृहिणी`;
+
+          // In a real app, this would send actual WhatsApp message
+          console.log('WhatsApp Message:', whatsappMessage);
+          
+          toast.success('Registration successful! WhatsApp message sent with next steps.');
+          
+          // Auto-login the seller after registration
+          login(response.user);
+          
+          // Reset form
+          setSellerData({
+            name: '',
+            phone: '',
+            email: '',
+            businessName: '',
+            categories: [],
+            whatsapp: ''
+          });
+          
+          // Redirect to seller dashboard
+          navigate('/seller-dashboard');
+        }, 1000);
+      } else {
+        toast.error(response.message || 'Registration failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast.error('Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+
+    /* Original simulation code - keeping for reference
     setTimeout(() => {
       const whatsappMessage = `🎉 Welcome to गृहिणी Family!
 
@@ -144,6 +235,7 @@ Team गृहिणी`;
       // Redirect to seller dashboard
       navigate('/seller-dashboard');
     }, 2000);
+    */
   };
 
   const toggleCategory = (category: string) => {
