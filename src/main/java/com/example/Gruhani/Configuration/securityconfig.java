@@ -13,7 +13,7 @@ public class securityconfig {
     public SecurityFilterChain secure(HttpSecurity hs) throws Exception {
         return hs.csrf(o->o.disable())
                 .formLogin(o->o.loginPage("/logins").defaultSuccessUrl("/home",true).loginProcessingUrl("/login"))
-                .oauth2Login(o->o.loginPage("/logins").defaultSuccessUrl("/home",true))
+
                 .authorizeHttpRequests(o->o.requestMatchers("/logins","/register","/home").permitAll().anyRequest().authenticated())
                 .build();
     }
